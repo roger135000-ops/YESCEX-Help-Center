@@ -7,17 +7,19 @@
 
 <style>
 :root {
-    --gold: #d4af37;
-    --bg-dark: #0b0b0f;
-    --card-bg: #16161e;
-    --border: #333;
+    --primary: #2563eb; /* 蓝色强调色 */
+    --bg-light: #f8fafc; /* 页面淡灰背景 */
+    --card-bg: #ffffff; /* 纯白卡片 */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
 }
 
 body {
     margin: 0;
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    background: linear-gradient(135deg, var(--bg-dark), #1a0f2e);
-    color: #eee;
+    background-color: var(--bg-light);
+    color: var(--text-main);
     line-height: 1.6;
 }
 
@@ -29,8 +31,8 @@ body {
 
 h1 {
     text-align: center;
-    font-weight: 600;
-    color: var(--gold);
+    font-weight: 700;
+    color: var(--text-main);
     font-size: 1.5rem;
     margin-bottom: 25px;
 }
@@ -46,9 +48,10 @@ input, select {
     padding: 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: #222;
-    color: white;
-    font-size: 16px; /* 防止iOS缩放 */
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 16px; /* 防止移动端缩放 */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 input {
@@ -56,34 +59,46 @@ input {
     min-width: 200px;
 }
 
-select {
-    width: 100px;
+input:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 /* 表格基础样式 */
 table {
     width: 100%;
     border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 10px;
+    background: var(--card-bg);
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 th {
-    background: #111;
-    color: var(--gold);
+    background: #f1f5f9;
+    color: var(--text-muted);
     padding: 15px 10px;
     text-align: left;
-    font-size: 0.9rem;
-    border-bottom: 2px solid var(--gold);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
 }
 
 td {
-    padding: 12px 10px;
+    padding: 14px 10px;
     border-bottom: 1px solid var(--border);
 }
 
-/* 移动端核心修改 */
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* 移动端适配 */
 @media (max-width: 768px) {
     .controls {
         flex-direction: column;
@@ -100,36 +115,36 @@ td {
     }
 
     tr {
-        margin-bottom: 15px;
+        margin-bottom: 16px;
         background: var(--card-bg);
-        padding: 10px;
+        padding: 12px;
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        border: 1px solid #2a2a35;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid var(--border);
     }
 
     td {
         border: none;
         position: relative;
-        padding-left: 50% !important;
+        padding-left: 45% !important;
         text-align: right !important;
-        border-bottom: 1px solid #222;
+        border-bottom: 1px dashed var(--border);
+        min-height: 24px;
     }
 
     td:last-child {
         border-bottom: none;
     }
 
-    /* 使用伪元素显示标题 */
     td::before {
         content: attr(data-label);
         position: absolute;
         left: 10px;
-        width: 45%;
+        width: 40%;
         text-align: left;
-        font-weight: bold;
-        color: var(--gold);
-        white-space: nowrap;
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.9rem;
     }
 }
 
@@ -142,19 +157,20 @@ td {
 }
 
 .pagination button {
-    background: #222;
-    color: white;
+    background: var(--card-bg);
+    color: var(--text-main);
     border: 1px solid var(--border);
-    padding: 8px 12px;
-    border-radius: 5px;
+    padding: 8px 14px;
+    border-radius: 6px;
     cursor: pointer;
-    min-width: 40px;
+    transition: all 0.2s;
 }
 
 .pagination button.active {
-    background: var(--gold);
-    color: black;
-    border-color: var(--gold);
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    font-weight: bold;
 }
 </style>
 </head>
@@ -191,10 +207,10 @@ td {
 </div>
 
 <script>
-// 这里保持你原始的数据不变
+// 原始数据
 const data = [
-    ["BTC","BTC","0.00001","0.0002","1","0.000015"],
-    ["ETH","ERC20","0.001","0.002","10","0.0003"],
+    ["BTC","BTC","0.00001","0.0002","不限","0.000015"],
+    ["ETH","ERC20","0.001","0.002","不限","0.0003"],
     ["FDUSD","ERC20","0.01","10","不限","0.3"],
     ["FDUSD","BSC","0.01","10","不限","0.01"],
     ["MYA","BSC","1","100","不限","20"],
@@ -290,7 +306,6 @@ const data = [
 const rowsPerPage = 10;
 let currentPage = 1;
 
-// 获取当前语言的表头名称
 function getLabels() {
     const isEn = document.getElementById("langSwitch").value === "en";
     return isEn ? 
@@ -310,7 +325,7 @@ function renderTable() {
         const tr = document.createElement("tr");
         row.forEach((col, index) => {
             const td = document.createElement("td");
-            td.setAttribute("data-label", labels[index]); // 关键：注入标签
+            td.setAttribute("data-label", labels[index]);
             td.innerText = col;
             tr.appendChild(td);
         });
@@ -324,20 +339,17 @@ function renderPagination(total){
     const container = document.getElementById("pagination");
     container.innerHTML="";
     
-    // 限制手机端显示的页码数量（可选优化，这里先做简单的）
     for(let i=1; i<=pages; i++){
         const btn = document.createElement("button");
         btn.innerText = i;
         if(i === currentPage) btn.className = "active";
-        btn.onclick = () => goPage(i);
+        btn.onclick = () => {
+            currentPage = i;
+            renderTable();
+            window.scrollTo(0,0);
+        };
         container.appendChild(btn);
     }
-}
-
-function goPage(page){
-    currentPage=page;
-    renderTable();
-    window.scrollTo(0,0); // 点击分页回到顶部
 }
 
 function filterData(){
@@ -351,24 +363,16 @@ document.getElementById("searchInput").addEventListener("input",()=>{
 });
 
 document.getElementById("langSwitch").addEventListener("change",(e)=>{
-    if(e.target.value==="en"){
-        document.getElementById("title").innerText="Deposit & Withdrawal Fee Table";
-        document.getElementById("th1").innerText="Coin";
-        document.getElementById("th2").innerText="Network";
-        document.getElementById("th3").innerText="Min Deposit";
-        document.getElementById("th4").innerText="Min Withdrawal";
-        document.getElementById("th5").innerText="Max Withdrawal";
-        document.getElementById("th6").innerText="Withdrawal Fee";
-    } else {
-        document.getElementById("title").innerText="充提币手续费查询";
-        document.getElementById("th1").innerText="币种";
-        document.getElementById("th2").innerText="网络";
-        document.getElementById("th3").innerText="最低充值";
-        document.getElementById("th4").innerText="最小提现";
-        document.getElementById("th5").innerText="最大提现";
-        document.getElementById("th6").innerText="提现手续费";
-    }
-    renderTable(); // 切换语言时直接重绘，不需要reload
+    const isEn = e.target.value === "en";
+    document.getElementById("title").innerText = isEn ? "Deposit & Withdrawal Fee Table" : "充提币手续费查询";
+    const labels = isEn ? 
+        ["Coin", "Network", "Min Deposit", "Min Withdrawal", "Max Withdrawal", "Withdrawal Fee"] : 
+        ["币种", "网络", "最低充值", "最小提现", "最大提现", "提现手续费"];
+    
+    labels.forEach((text, i) => {
+        document.getElementById(`th${i+1}`).innerText = text;
+    });
+    renderTable();
 });
 
 renderTable();
