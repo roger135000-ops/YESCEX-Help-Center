@@ -6,85 +6,155 @@
 <title>充提币手续费查询</title>
 
 <style>
-body{
-    margin:0;
-    font-family: "Segoe UI", Arial;
-    background: linear-gradient(135deg,#0b0b0f,#1a0f2e);
-    color:#eee;
+:root {
+    --gold: #d4af37;
+    --bg-dark: #0b0b0f;
+    --card-bg: #16161e;
+    --border: #333;
 }
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:30px 20px;
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, var(--bg-dark), #1a0f2e);
+    color: #eee;
+    line-height: 1.6;
 }
-h1{
-    text-align:center;
-    font-weight:600;
-    color:#d4af37;
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px 15px;
 }
-.controls{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:space-between;
-    margin:20px 0;
-    gap:10px;
+
+h1 {
+    text-align: center;
+    font-weight: 600;
+    color: var(--gold);
+    font-size: 1.5rem;
+    margin-bottom: 25px;
 }
-input,select,button{
-    padding:10px;
-    border-radius:6px;
-    border:none;
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
 }
-input{
-    flex:1;
-    min-width:200px;
+
+input, select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #222;
+    color: white;
+    font-size: 16px; /* 防止iOS缩放 */
 }
-button{
-    background:#d4af37;
-    color:#000;
-    cursor:pointer;
-    font-weight:bold;
+
+input {
+    flex: 1;
+    min-width: 200px;
 }
-table{
-    width:100%;
-    border-collapse:collapse;
+
+select {
+    width: 100px;
 }
-th,td{
-    padding:10px;
-    text-align:center;
-    border-bottom:1px solid #333;
+
+/* 表格基础样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    overflow: hidden;
 }
-th{
-    background:#111;
-    color:#d4af37;
+
+th {
+    background: #111;
+    color: var(--gold);
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 0.9rem;
+    border-bottom: 2px solid var(--gold);
 }
-tr:hover{
-    background:#1e1e2f;
+
+td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
 }
-.pagination{
-    text-align:center;
-    margin-top:20px;
-}
-.pagination button{
-    margin:5px;
-    padding:8px 12px;
-}
-@media(max-width:768px){
-    table,thead,tbody,th,td,tr{
-        display:block;
+
+/* 移动端核心修改 */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
     }
-    tr{
-        margin-bottom:15px;
-        background:#111;
-        padding:10px;
-        border-radius:8px;
+
+    table, thead, tbody, th, td, tr {
+        display: block;
     }
-    th{
-        display:none;
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
     }
-    td{
-        text-align:left;
-        padding:5px 0;
+
+    tr {
+        margin-bottom: 15px;
+        background: var(--card-bg);
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        border: 1px solid #2a2a35;
     }
+
+    td {
+        border: none;
+        position: relative;
+        padding-left: 50% !important;
+        text-align: right !important;
+        border-bottom: 1px solid #222;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    /* 使用伪元素显示标题 */
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        text-align: left;
+        font-weight: bold;
+        color: var(--gold);
+        white-space: nowrap;
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.pagination button {
+    background: #222;
+    color: white;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    min-width: 40px;
+}
+
+.pagination button.active {
+    background: var(--gold);
+    color: black;
+    border-color: var(--gold);
 }
 </style>
 </head>
@@ -95,25 +165,25 @@ tr:hover{
 <h1 id="title">充提币手续费查询</h1>
 
 <div class="controls">
-<input type="text" id="searchInput" placeholder="搜索币种或网络...">
-<select id="langSwitch">
-<option value="zh">中文</option>
-<option value="en">English</option>
-</select>
+    <input type="text" id="searchInput" placeholder="搜索币种或网络...">
+    <select id="langSwitch">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+    </select>
 </div>
 
 <table id="feeTable">
-<thead>
-<tr>
-<th id="th1">币种</th>
-<th id="th2">网络</th>
-<th id="th3">最低充值</th>
-<th id="th4">最小提现</th>
-<th id="th5">最大提现</th>
-<th id="th6">提现手续费</th>
-</tr>
-</thead>
-<tbody></tbody>
+    <thead>
+        <tr>
+            <th id="th1">币种</th>
+            <th id="th2">网络</th>
+            <th id="th3">最低充值</th>
+            <th id="th4">最小提现</th>
+            <th id="th5">最大提现</th>
+            <th id="th6">提现手续费</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
 </table>
 
 <div class="pagination" id="pagination"></div>
@@ -121,112 +191,130 @@ tr:hover{
 </div>
 
 <script>
+// 这里保持你原始的数据不变
 const data = [
-["BTC","BTC","0.00001","0.0002","1","0.000015"],
-["ETH","ERC20","0.001","0.002","10","0.0003"],
-["FDUSD","ERC20","0.01","10","不限","0.3"],
-["FDUSD","BSC","0.01","10","不限","0.01"],
-["MYA","BSC","1","100","不限","20"],
-["TUSD","ERC20","0.001","10","不限","0.3"],
-["TUSD","BSC","0.01","0.036","不限","0.018"],
-["USDT","ERC20","0.001","10","不限","0.8"],
-["USDT","BSC","0.01","10","不限","0.01"],
-["USDT","TRC20","0.01","10","不限","1"],
-["XRP","XRP","0.1","20","不限","0.25"],
-["ADA","ADA","1","5","不限","1"],
-["SOL","SOL","0.01","0.1","不限","0.01"],
-["DOGE","DOGE","1","10","不限","5"],
-["DOT","DOT","0.1","1","不限","0.1"],
-["MATIC","ERC20","0.1","1","不限","0.2"],
-["MATIC","POLYGON","0.1","1","不限","0.01"],
-["BNB","BSC","0.01","0.05","不限","0.0005"],
-["LTC","LTC","0.001","0.01","不限","0.001"],
-["BCH","BCH","0.001","0.01","不限","0.001"],
-["TRX","TRC20","1","10","不限","1"],
-["AVAX","C-Chain","0.01","0.1","不限","0.01"],
-["SHIB","ERC20","100000","500000","不限","200000"],
-["LINK","ERC20","0.1","1","不限","0.2"],
-["UNI","ERC20","0.1","1","不限","0.3"],
-["ETC","ETC","0.01","0.1","不限","0.01"],
-["XLM","XLM","1","10","不限","0.1"],
-["FIL","FIL","0.01","0.1","不限","0.01"],
-["APT","APT","0.1","1","不限","0.05"],
-["ARB","ARBITRUM","0.1","1","不限","0.1"],
-["OP","OPTIMISM","0.1","1","不限","0.1"],
-["NEAR","NEAR","0.1","1","不限","0.01"],
-["ATOM","ATOM","0.01","0.1","不限","0.005"],
-["ICP","ICP","0.01","0.1","不限","0.01"],
-["AXS","ERC20","0.1","1","不限","0.2"],
-["SAND","ERC20","0.1","1","不限","0.3"],
-["MANA","ERC20","0.1","1","不限","0.3"],
-["GALA","ERC20","1","10","不限","5"],
-["EGLD","EGLD","0.01","0.1","不限","0.001"],
-["KAVA","KAVA","0.01","0.1","不限","0.01"],
-["CRV","ERC20","0.1","1","不限","0.2"],
-["COMP","ERC20","0.01","0.1","不限","0.05"],
-["DYDX","ERC20","0.1","1","不限","0.2"],
-["GMX","ARBITRUM","0.01","0.1","不限","0.01"],
-["CAKE","BSC","0.1","1","不限","0.01"],
-["KSM","KSM","0.01","0.1","不限","0.01"],
-["FTM","FANTOM","0.1","1","不限","0.01"],
-["THETA","THETA","0.1","1","不限","0.1"],
-["HBAR","HBAR","1","10","不限","0.1"],
-["ALGO","ALGO","0.1","1","不限","0.01"],
-["FLOW","FLOW","0.1","1","不限","0.01"],
-["EOS","EOS","0.1","1","不限","0.1"],
-["AAVE","ERC20","0.01","0.1","不限","0.02"],
-["SNX","ERC20","0.1","1","不限","0.2"],
-["ZIL","ZIL","1","10","不限","1"],
-["MINA","MINA","0.1","1","不限","0.01"],
-["CHZ","CHZ","1","10","不限","2"],
-["ROSE","ROSE","1","10","不限","1"],
-["ONE","ONE","1","10","不限","0.1"],
-["CELO","CELO","0.1","1","不限","0.01"],
-["CFX","CFX","1","10","不限","1"],
-["KLAY","KLAY","0.1","1","不限","0.01"],
-["RUNE","RUNE","0.1","1","不限","0.02"],
-["SUI","SUI","0.1","1","不限","0.01"],
-["PEPE","ERC20","100000","500000","不限","200000"],
-["FLOKI","ERC20","1000","5000","不限","2000"],
-["LDO","ERC20","0.1","1","不限","0.2"],
-["MASK","ERC20","0.1","1","不限","0.2"],
-["STX","STX","0.1","1","不限","0.1"],
-["GMT","SOL","0.1","1","不限","0.01"],
-["BLUR","ERC20","0.1","1","不限","0.2"],
-["TIA","TIA","0.1","1","不限","0.01"],
-["WLD","ERC20","0.1","1","不限","0.3"],
-["JTO","SOL","0.1","1","不限","0.01"],
-["BONK","SOL","1000","5000","不限","2000"],
-["PYTH","SOL","0.1","1","不限","0.01"],
-["STRK","ERC20","0.1","1","不限","0.3"],
-["SEI","SEI","0.1","1","不限","0.01"],
-["AR","AR","0.01","0.1","不限","0.01"],
-["KAS","KAS","1","10","不限","1"],
-["TON","TON","0.1","1","不限","0.05"],
-["OKT","OKT","0.01","0.1","不限","0.01"],
-["HT","ERC20","0.1","1","不限","0.2"],
-["CRO","ERC20","1","10","不限","2"],
-["BTT","TRC20","1000","5000","不限","2000"],
-["ZRX","ERC20","0.1","1","不限","0.2"],
-["ENJ","ERC20","0.1","1","不限","0.2"],
-["BAT","ERC20","0.1","1","不限","0.2"],
-["OMG","ERC20","0.1","1","不限","0.2"],
-["QTUM","QTUM","0.01","0.1","不限","0.01"],
-["DASH","DASH","0.001","0.01","不限","0.001"],
-["NEO","NEO","0.01","0.1","不限","0.01"]
+    ["BTC","BTC","0.00001","0.0002","1","0.000015"],
+    ["ETH","ERC20","0.001","0.002","10","0.0003"],
+    ["FDUSD","ERC20","0.01","10","不限","0.3"],
+    ["FDUSD","BSC","0.01","10","不限","0.01"],
+    ["MYA","BSC","1","100","不限","20"],
+    ["TUSD","ERC20","0.001","10","不限","0.3"],
+    ["TUSD","BSC","0.01","0.036","不限","0.018"],
+    ["USDT","ERC20","0.001","10","不限","0.8"],
+    ["USDT","BSC","0.01","10","不限","0.01"],
+    ["USDT","TRC20","0.01","10","不限","1"],
+    ["XRP","XRP","0.1","20","不限","0.25"],
+    ["ADA","ADA","1","5","不限","1"],
+    ["SOL","SOL","0.01","0.1","不限","0.01"],
+    ["DOGE","DOGE","1","10","不限","5"],
+    ["DOT","DOT","0.1","1","不限","0.1"],
+    ["MATIC","ERC20","0.1","1","不限","0.2"],
+    ["MATIC","POLYGON","0.1","1","不限","0.01"],
+    ["BNB","BSC","0.01","0.05","不限","0.0005"],
+    ["LTC","LTC","0.001","0.01","不限","0.001"],
+    ["BCH","BCH","0.001","0.01","不限","0.001"],
+    ["TRX","TRC20","1","10","不限","1"],
+    ["AVAX","C-Chain","0.01","0.1","不限","0.01"],
+    ["SHIB","ERC20","100000","500000","不限","200000"],
+    ["LINK","ERC20","0.1","1","不限","0.2"],
+    ["UNI","ERC20","0.1","1","不限","0.3"],
+    ["ETC","ETC","0.01","0.1","不限","0.01"],
+    ["XLM","XLM","1","10","不限","0.1"],
+    ["FIL","FIL","0.01","0.1","不限","0.01"],
+    ["APT","APT","0.1","1","不限","0.05"],
+    ["ARB","ARBITRUM","0.1","1","不限","0.1"],
+    ["OP","OPTIMISM","0.1","1","不限","0.1"],
+    ["NEAR","NEAR","0.1","1","不限","0.01"],
+    ["ATOM","ATOM","0.01","0.1","不限","0.005"],
+    ["ICP","ICP","0.01","0.1","不限","0.01"],
+    ["AXS","ERC20","0.1","1","不限","0.2"],
+    ["SAND","ERC20","0.1","1","不限","0.3"],
+    ["MANA","ERC20","0.1","1","不限","0.3"],
+    ["GALA","ERC20","1","10","不限","5"],
+    ["EGLD","EGLD","0.01","0.1","不限","0.001"],
+    ["KAVA","KAVA","0.01","0.1","不限","0.01"],
+    ["CRV","ERC20","0.1","1","不限","0.2"],
+    ["COMP","ERC20","0.01","0.1","不限","0.05"],
+    ["DYDX","ERC20","0.1","1","不限","0.2"],
+    ["GMX","ARBITRUM","0.01","0.1","不限","0.01"],
+    ["CAKE","BSC","0.1","1","不限","0.01"],
+    ["KSM","KSM","0.01","0.1","不限","0.01"],
+    ["FTM","FANTOM","0.1","1","不限","0.01"],
+    ["THETA","THETA","0.1","1","不限","0.1"],
+    ["HBAR","HBAR","1","10","不限","0.1"],
+    ["ALGO","ALGO","0.1","1","不限","0.01"],
+    ["FLOW","FLOW","0.1","1","不限","0.01"],
+    ["EOS","EOS","0.1","1","不限","0.1"],
+    ["AAVE","ERC20","0.01","0.1","不限","0.02"],
+    ["SNX","ERC20","0.1","1","不限","0.2"],
+    ["ZIL","ZIL","1","10","不限","1"],
+    ["MINA","MINA","0.1","1","不限","0.01"],
+    ["CHZ","CHZ","1","10","不限","2"],
+    ["ROSE","ROSE","1","10","不限","1"],
+    ["ONE","ONE","1","10","不限","0.1"],
+    ["CELO","CELO","0.1","1","不限","0.01"],
+    ["CFX","CFX","1","10","不限","1"],
+    ["KLAY","KLAY","0.1","1","不限","0.01"],
+    ["RUNE","RUNE","0.1","1","不限","0.02"],
+    ["SUI","SUI","0.1","1","不限","0.01"],
+    ["PEPE","ERC20","100000","500000","不限","200000"],
+    ["FLOKI","ERC20","1000","5000","不限","2000"],
+    ["LDO","ERC20","0.1","1","不限","0.2"],
+    ["MASK","ERC20","0.1","1","不限","0.2"],
+    ["STX","STX","0.1","1","不限","0.1"],
+    ["GMT","SOL","0.1","1","不限","0.01"],
+    ["BLUR","ERC20","0.1","1","不限","0.2"],
+    ["TIA","TIA","0.1","1","不限","0.01"],
+    ["WLD","ERC20","0.1","1","不限","0.3"],
+    ["JTO","SOL","0.1","1","不限","0.01"],
+    ["BONK","SOL","1000","5000","不限","2000"],
+    ["PYTH","SOL","0.1","1","不限","0.01"],
+    ["STRK","ERC20","0.1","1","不限","0.3"],
+    ["SEI","SEI","0.1","1","不限","0.01"],
+    ["AR","AR","0.01","0.1","不限","0.01"],
+    ["KAS","KAS","1","10","不限","1"],
+    ["TON","TON","0.1","1","不限","0.05"],
+    ["OKT","OKT","0.01","0.1","不限","0.01"],
+    ["HT","ERC20","0.1","1","不限","0.2"],
+    ["CRO","ERC20","1","10","不限","2"],
+    ["BTT","TRC20","1000","5000","不限","2000"],
+    ["ZRX","ERC20","0.1","1","不限","0.2"],
+    ["ENJ","ERC20","0.1","1","不限","0.2"],
+    ["BAT","ERC20","0.1","1","不限","0.2"],
+    ["OMG","ERC20","0.1","1","不限","0.2"],
+    ["QTUM","QTUM","0.01","0.1","不限","0.01"],
+    ["DASH","DASH","0.001","0.01","不限","0.001"],
+    ["NEO","NEO","0.01","0.1","不限","0.01"]
 ];
 
 const rowsPerPage = 10;
 let currentPage = 1;
 
+// 获取当前语言的表头名称
+function getLabels() {
+    const isEn = document.getElementById("langSwitch").value === "en";
+    return isEn ? 
+        ["Coin", "Network", "Min Deposit", "Min Withdrawal", "Max Withdrawal", "Fee"] : 
+        ["币种", "网络", "最低充值", "最小提现", "最大提现", "提现手续费"];
+}
+
 function renderTable() {
     const tbody = document.querySelector("#feeTable tbody");
     tbody.innerHTML = "";
+    const labels = getLabels();
     const filtered = filterData();
     const start = (currentPage-1)*rowsPerPage;
-    const pageData = filtered.slice(start,start+rowsPerPage);
-    pageData.forEach(row=>{
-        tbody.innerHTML += `<tr>${row.map(col=>`<td>${col}</td>`).join("")}</tr>`;
+    const pageData = filtered.slice(start, start + rowsPerPage);
+    
+    pageData.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach((col, index) => {
+            const td = document.createElement("td");
+            td.setAttribute("data-label", labels[index]); // 关键：注入标签
+            td.innerText = col;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     });
     renderPagination(filtered.length);
 }
@@ -235,14 +323,21 @@ function renderPagination(total){
     const pages = Math.ceil(total/rowsPerPage);
     const container = document.getElementById("pagination");
     container.innerHTML="";
-    for(let i=1;i<=pages;i++){
-        container.innerHTML+=`<button onclick="goPage(${i})">${i}</button>`;
+    
+    // 限制手机端显示的页码数量（可选优化，这里先做简单的）
+    for(let i=1; i<=pages; i++){
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        if(i === currentPage) btn.className = "active";
+        btn.onclick = () => goPage(i);
+        container.appendChild(btn);
     }
 }
 
 function goPage(page){
     currentPage=page;
     renderTable();
+    window.scrollTo(0,0); // 点击分页回到顶部
 }
 
 function filterData(){
@@ -264,9 +359,16 @@ document.getElementById("langSwitch").addEventListener("change",(e)=>{
         document.getElementById("th4").innerText="Min Withdrawal";
         document.getElementById("th5").innerText="Max Withdrawal";
         document.getElementById("th6").innerText="Withdrawal Fee";
-    }else{
-        location.reload();
+    } else {
+        document.getElementById("title").innerText="充提币手续费查询";
+        document.getElementById("th1").innerText="币种";
+        document.getElementById("th2").innerText="网络";
+        document.getElementById("th3").innerText="最低充值";
+        document.getElementById("th4").innerText="最小提现";
+        document.getElementById("th5").innerText="最大提现";
+        document.getElementById("th6").innerText="提现手续费";
     }
+    renderTable(); // 切换语言时直接重绘，不需要reload
 });
 
 renderTable();
