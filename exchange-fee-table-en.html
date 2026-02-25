@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit & Withdrawal Fee Table</title>
+
+<style>
+:root {
+    --primary: #2563eb;
+    --bg-light: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* Top Navigation */
+.top-nav {
+    padding: 15px 20px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 16px;
+}
+
+.back-btn svg {
+    margin-right: 5px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px 15px;
+}
+
+h1 {
+    text-align: center;
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+input, select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+input { flex: 1; min-width: 200px; }
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+th {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    padding: 15px 10px;
+    text-align: left;
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--border);
+}
+
+td { padding: 14px 10px; border-bottom: 1px solid var(--border); }
+
+@media (max-width: 768px) {
+    .controls { flex-direction: column; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    tr {
+        margin-bottom: 16px;
+        background: var(--card-bg);
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid var(--border);
+    }
+    td {
+        border: none;
+        position: relative;
+        padding-left: 45% !important;
+        text-align: right !important;
+        border-bottom: 1px dashed var(--border);
+    }
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.pagination button {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+</style>
+</head>
+
+<body>
+
+<nav class="top-nav">
+    <button class="back-btn" onclick="history.back()" id="backText">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back
+    </button>
+</nav>
+
+<div class="container">
+    <h1 id="title">Deposit & Withdrawal Fee Table</h1>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search coin or network...">
+        <select id="langSwitch">
+            <option value="en" selected>English</option>
+            <option value="zh">中文</option>
+        </select>
+    </div>
+
+    <table id="feeTable">
+        <thead>
+            <tr>
+                <th id="th1">Coin</th>
+                <th id="th2">Network</th>
+                <th id="th3">Min Deposit</th>
+                <th id="th4">Min Withdrawal</th>
+                <th id="th5">Max Withdrawal</th>
+                <th id="th6">Withdrawal Fee</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+// Data Source
+const data = [
+    ["BTC","BTC","0.00001","0.0002","1","0.000015"],
+    ["ETH","ERC20","0.001","0.002","10","0.0003"],
+    ["FDUSD","ERC20","0.01","10","Unlimited","0.3"],
+    ["FDUSD","BSC","0.01","10","Unlimited","0.01"],
+    ["MYA","BSC","1","100","Unlimited","20"],
+    ["TUSD","ERC20","0.001","10","Unlimited","0.3"],
+    ["TUSD","BSC","0.01","0.036","Unlimited","0.018"],
+    ["USDT","ERC20","0.001","10","Unlimited","0.8"],
+    ["USDT","BSC","0.01","10","Unlimited","0.01"],
+    ["USDT","TRC20","0.01","10","Unlimited","1"],
+    ["XRP","XRP","0.1","20","Unlimited","0.25"],
+    ["ADA","ADA","1","5","Unlimited","1"],
+    ["SOL","SOL","0.01","0.1","Unlimited","0.01"],
+    ["DOGE","DOGE","1","10","Unlimited","5"],
+    ["DOT","DOT","0.1","1","Unlimited","0.1"],
+    ["MATIC","ERC20","0.1","1","Unlimited","0.2"],
+    ["MATIC","POLYGON","0.1","1","Unlimited","0.01"],
+    ["BNB","BSC","0.01","0.05","Unlimited","0.0005"],
+    ["LTC","LTC","0.001","0.01","Unlimited","0.001"],
+    ["BCH","BCH","0.001","0.01","Unlimited","0.001"],
+    ["TRX","TRC20","1","10","Unlimited","1"],
+    ["AVAX","C-Chain","0.01","0.1","Unlimited","0.01"],
+    ["SHIB","ERC20","100000","500000","Unlimited","200000"],
+    ["LINK","ERC20","0.1","1","Unlimited","0.2"],
+    ["UNI","ERC20","0.1","1","Unlimited","0.3"],
+    ["ETC","ETC","0.01","0.1","Unlimited","0.01"],
+    ["XLM","XLM","1","10","Unlimited","0.1"],
+    ["FIL","FIL","0.01","0.1","Unlimited","0.01"],
+    ["APT","APT","0.1","1","Unlimited","0.05"],
+    ["ARB","ARBITRUM","0.1","1","Unlimited","0.1"],
+    ["OP","OPTIMISM","0.1","1","Unlimited","0.1"],
+    ["NEAR","NEAR","0.1","1","Unlimited","0.01"],
+    ["ATOM","ATOM","0.01","0.1","Unlimited","0.005"],
+    ["ICP","ICP","0.01","0.1","Unlimited","0.01"],
+    ["AXS","ERC20","0.1","1","Unlimited","0.2"],
+    ["SAND","ERC20","0.1","1","Unlimited","0.3"],
+    ["MANA","ERC20","0.1","1","Unlimited","0.3"],
+    ["GALA","ERC20","1","10","Unlimited","5"],
+    ["EGLD","EGLD","0.01","0.1","Unlimited","0.001"],
+    ["KAVA","KAVA","0.01","0.1","Unlimited","0.01"],
+    ["CRV","ERC20","0.1","1","Unlimited","0.2"],
+    ["COMP","ERC20","0.01","0.1","Unlimited","0.05"],
+    ["DYDX","ERC20","0.1","1","Unlimited","0.2"],
+    ["GMX","ARBITRUM","0.01","0.1","Unlimited","0.01"],
+    ["CAKE","BSC","0.1","1","Unlimited","0.01"],
+    ["KSM","KSM","0.01","0.1","Unlimited","0.01"],
+    ["FTM","FANTOM","0.1","1","Unlimited","0.01"],
+    ["THETA","THETA","0.1","1","Unlimited","0.1"],
+    ["HBAR","HBAR","1","10","Unlimited","0.1"],
+    ["ALGO","ALGO","0.1","1","Unlimited","0.01"],
+    ["FLOW","FLOW","0.1","1","Unlimited","0.01"],
+    ["EOS","EOS","0.1","1","Unlimited","0.1"],
+    ["AAVE","ERC20","0.01","0.1","Unlimited","0.02"],
+    ["SNX","ERC20","0.1","1","Unlimited","0.2"],
+    ["ZIL","ZIL","1","10","Unlimited","1"],
+    ["MINA","MINA","0.1","1","Unlimited","0.01"],
+    ["CHZ","CHZ","1","10","Unlimited","2"],
+    ["ROSE","ROSE","1","10","Unlimited","1"],
+    ["ONE","ONE","1","10","Unlimited","0.1"],
+    ["CELO","CELO","0.1","1","Unlimited","0.01"],
+    ["CFX","CFX","1","10","Unlimited","1"],
+    ["KLAY","KLAY","0.1","1","Unlimited","0.01"],
+    ["RUNE","RUNE","0.1","1","Unlimited","0.02"],
+    ["SUI","SUI","0.1","1","Unlimited","0.01"],
+    ["PEPE","ERC20","100000","500000","Unlimited","200000"],
+    ["FLOKI","ERC20","1000","5000","Unlimited","2000"],
+    ["LDO","ERC20","0.1","1","Unlimited","0.2"],
+    ["MASK","ERC20","0.1","1","Unlimited","0.2"],
+    ["STX","STX","0.1","1","Unlimited","0.1"],
+    ["GMT","SOL","0.1","1","Unlimited","0.01"],
+    ["BLUR","ERC20","0.1","1","Unlimited","0.2"],
+    ["TIA","TIA","0.1","1","Unlimited","0.01"],
+    ["WLD","ERC20","0.1","1","Unlimited","0.3"],
+    ["JTO","SOL","0.1","1","Unlimited","0.01"],
+    ["BONK","SOL","1000","5000","Unlimited","2000"],
+    ["PYTH","SOL","0.1","1","Unlimited","0.01"],
+    ["STRK","ERC20","0.1","1","Unlimited","0.3"],
+    ["SEI","SEI","0.1","1","Unlimited","0.01"],
+    ["AR","AR","0.01","0.1","Unlimited","0.01"],
+    ["KAS","KAS","1","10","Unlimited","1"],
+    ["TON","TON","0.1","1","Unlimited","0.05"],
+    ["OKT","OKT","0.01","0.1","Unlimited","0.01"],
+    ["HT","ERC20","0.1","1","Unlimited","0.2"],
+    ["CRO","ERC20","1","10","Unlimited","2"],
+    ["BTT","TRC20","1000","5000","Unlimited","2000"],
+    ["ZRX","ERC20","0.1","1","Unlimited","0.2"],
+    ["ENJ","ERC20","0.1","1","Unlimited","0.2"],
+    ["BAT","ERC20","0.1","1","Unlimited","0.2"],
+    ["OMG","ERC20","0.1","1","Unlimited","0.2"],
+    ["QTUM","QTUM","0.01","0.1","Unlimited","0.01"],
+    ["DASH","DASH","0.001","0.01","Unlimited","0.001"],
+    ["NEO","NEO","0.01","0.1","Unlimited","0.01"]
+];
+
+const rowsPerPage = 10;
+let currentPage = 1;
+
+function getLabels() {
+    const isEn = document.getElementById("langSwitch").value === "en";
+    return isEn ? 
+        ["Coin", "Network", "Min Deposit", "Min Withdrawal", "Max Withdrawal", "Fee"] : 
+        ["币种", "网络", "最低充值", "最小提现", "最大提现", "提现手续费"];
+}
+
+function renderTable() {
+    const tbody = document.querySelector("#feeTable tbody");
+    tbody.innerHTML = "";
+    const labels = getLabels();
+    const isEn = document.getElementById("langSwitch").value === "en";
+    const filtered = filterData();
+    const start = (currentPage-1)*rowsPerPage;
+    const pageData = filtered.slice(start, start + rowsPerPage);
+    
+    pageData.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach((col, index) => {
+            const td = document.createElement("td");
+            td.setAttribute("data-label", labels[index]);
+            // Localize "Unlimited" / "不限"
+            let content = col;
+            if(col === "不限" || col === "Unlimited") {
+                content = isEn ? "Unlimited" : "不限";
+            }
+            td.innerText = content;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    renderPagination(filtered.length);
+}
+
+function renderPagination(total){
+    const pages = Math.ceil(total/rowsPerPage);
+    const container = document.getElementById("pagination");
+    container.innerHTML="";
+    for(let i=1; i<=pages; i++){
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        if(i === currentPage) btn.className = "active";
+        btn.onclick = () => {
+            currentPage = i;
+            renderTable();
+            window.scrollTo(0,0);
+        };
+        container.appendChild(btn);
+    }
+}
+
+function filterData(){
+    const keyword=document.getElementById("searchInput").value.toUpperCase();
+    return data.filter(row=>row[0].includes(keyword)||row[1].includes(keyword));
+}
+
+document.getElementById("searchInput").addEventListener("input",()=>{
+    currentPage=1;
+    renderTable();
+});
+
+document.getElementById("langSwitch").addEventListener("change",(e)=>{
+    const isEn = e.target.value === "en";
+    
+    // Update Header and UI text
+    document.getElementById("title").innerText = isEn ? "Deposit & Withdrawal Fee Table" : "充提币手续费查询";
+    document.getElementById("searchInput").placeholder = isEn ? "Search coin or network..." : "搜索币种或网络...";
+    document.getElementById("backText").innerHTML = isEn ? 
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Back' : 
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> 返回';
+    
+    const labels = isEn ? 
+        ["Coin", "Network", "Min Deposit", "Min Withdrawal", "Max Withdrawal", "Withdrawal Fee"] : 
+        ["币种", "网络", "最低充值", "最小提现", "最大提现", "提现手续费"];
+    
+    labels.forEach((text, i) => {
+        document.getElementById(`th${i+1}`).innerText = text;
+    });
+    
+    renderTable();
+});
+
+// Initialize table on load
+renderTable();
+</script>
+
+</body>
+</html>
